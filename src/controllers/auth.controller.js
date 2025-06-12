@@ -11,12 +11,10 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    console.log("req.body:", req.body); 
     const { email, password } = req.body;
     const { user, token } = await authService.loginUser({ email, password });
     res.json({ user, token });
   } catch (err) {
-    console.error(err); 
     res.status(401).json({ error: err.message });
   }
 };
