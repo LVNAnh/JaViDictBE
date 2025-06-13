@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 exports.createTokens = (user) => {
   const accessToken = jwt.sign(
