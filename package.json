@@ -4,7 +4,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "migrate": "node src/migrations/addRoleAndMembership.js",
+    "migrate:rollback": "node -e \"require('./src/migrations/addRoleAndMembership.js').rollbackMigration()\"",
+    "migrate:all": "node -e \"require('./src/migrations/index.js').runAllMigrations()\"",
+    "create-admin": "node -e \"require('./src/migrations/addRoleAndMembership.js').createFirstAdmin()\""
   },
   "keywords": [],
   "author": "",
