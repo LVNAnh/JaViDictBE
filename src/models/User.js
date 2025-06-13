@@ -16,9 +16,41 @@ const userSchema = new mongoose.Schema(
     favoriteWords: [String],
     searchHistory: [String],
     preferredLanguage: { type: String, enum: ["ja", "vi"], default: "vi" },
+    refreshTokens: [
+      {
+        token: String,
+        createdAt: { type: Date, default: Date.now },
+        expiresAt: Date,
+      },
+    ],
   },
   { timestamps: true }
 );
+
+userSchema.methods.addRefreshToken = function (token) {
+  const expiresAt = new Date();
+  const expiresInDays = parseInt(process.env.REFRESH_TOKEN_EXPIRES_IN) || 7;
+  expiresAt.setDate(expiresAt.getDate() + expiresInDays);
+
+  this.refreshTokens.push({ token, expiresAt });
+
+  if (this.refreshTokens.length > 5) {
+    this.refreshTokens = this.refreshTokens.slice(-5);
+  }
+
+  return this.save();
+};
+
+userSchema.methods.removeRefreshToken = function (token) {
+  this.refreshTokens = this.refreshTokens.filter((rt) => rt.token !== token);
+  return this.save();
+};
+
+userSchema.methods.cleanExpiredRefreshTokens = function () {
+  const now = new Date();
+  this.refreshTokens = this.refreshTokens.filter((rt) => rt.expiresAt > now);
+  return this.save();
+};
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password") && !this.isModified("membership"))

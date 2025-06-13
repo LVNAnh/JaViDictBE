@@ -14,7 +14,9 @@ const authMiddleware = async (req, res, next) => {
     req.user = await User.findById(decoded.id).select("-password");
     next();
   } catch (err) {
-    res.status(401).json({ error: "Token không hợp lệ hoặc đã hết hạn" });
+    res
+      .status(401)
+      .json({ error: "Access token không hợp lệ hoặc đã hết hạn" });
   }
 };
 
