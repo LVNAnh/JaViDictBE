@@ -1,28 +1,60 @@
-const User = require("../models/User");
+const userService = require("../services/user.service");
 
 exports.addFavorite = async (req, res) => {
-  const { word } = req.body;
-  const user = req.user;
+  try {
+    const { word } = req.body;
+    const userId = req.user._id;
 
-  if (!word) return res.status(400).json({ error: "Từ không hợp lệ" });
-
-  if (!user.favoriteWords.includes(word)) {
-    user.favoriteWords.push(word);
-    await user.save();
+    const result = await userService.addFavoriteWord(userId, word);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
+};
 
-  res.json({ favoriteWords: user.favoriteWords });
+exports.removeFavorite = async (req, res) => {
+  try {
+    const { word } = req.body;
+    const userId = req.user._id;
+
+    const result = await userService.removeFavoriteWord(userId, word);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.getFavorites = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const result = await userService.getFavoriteWords(userId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.checkFavorite = async (req, res) => {
+  try {
+    const { word } = req.params;
+    const userId = req.user._id;
+
+    const result = await userService.checkFavoriteWord(userId, word);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 exports.addSearchHistory = async (req, res) => {
-  const { word } = req.body;
-  const user = req.user;
+  try {
+    const { word } = req.body;
+    const userId = req.user._id;
 
-  if (!word) return res.status(400).json({ error: "Từ không hợp lệ" });
-
-  user.searchHistory.unshift(word); 
-  user.searchHistory = [...new Set(user.searchHistory)].slice(0, 20); 
-  await user.save();
-
-  res.json({ searchHistory: user.searchHistory });
+    const result = await userService.addToSearchHistory(userId, word);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 };
