@@ -103,12 +103,18 @@ const dictionarySchema = new mongoose.Schema(
   }
 );
 
-dictionarySchema.index({
-  word: "text",
-  pronunciation: "text",
-  romaji: "text",
-  "meanings.definition": "text",
-});
+dictionarySchema.index(
+  {
+    word: "text",
+    pronunciation: "text",
+    romaji: "text",
+    "meanings.definition": "text",
+  },
+  {
+    default_language: "none",
+    language_override: "none",
+  }
+);
 
 dictionarySchema.methods.incrementSearchCount = function () {
   this.searchCount += 1;
@@ -133,7 +139,12 @@ dictionarySchema.statics.findByLanguage = function (language) {
 
 dictionarySchema.statics.searchWords = function (query, language = null) {
   const searchConditions = {
-    $text: { $search: query },
+    $or: [
+      { word: new RegExp(query, "i") },
+      { pronunciation: new RegExp(query, "i") },
+      { romaji: new RegExp(query, "i") },
+      { "meanings.definition": new RegExp(query, "i") },
+    ],
     status: "active",
   };
 
@@ -141,9 +152,7 @@ dictionarySchema.statics.searchWords = function (query, language = null) {
     searchConditions.language = language;
   }
 
-  return this.find(searchConditions, { score: { $meta: "textScore" } }).sort({
-    score: { $meta: "textScore" },
-  });
+  return this.find(searchConditions).sort({ searchCount: -1 });
 };
 
 module.exports = mongoose.model("Dictionary", dictionarySchema);
